@@ -1,0 +1,33 @@
+{
+  "name": "tamed-wit-nlu",
+  "version": "0.0.0",
+  "description": "Simplified wit api for NLU training, testing and message.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/tap --cov test/* --reporter=spec",
+    "watch-test": "./node_modules/.bin/chokidar --verbose --initial \"**/*.js\" -i \"node_modules\" -c \"npm run test\""
+  },
+  "keywords": [
+    "wit",
+    "nlu",
+    "nlp",
+    "chatbot"
+  ],
+  "author": "Gagan Bansal",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "clone": "^2.1.1",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^1.2.0",
+    "dotenv": "^6.0.0",
+    "dotenv-safe": "^6.0.0",
+    "is-class": "0.0.5",
+    "moment": "^2.22.2",
+    "sinon": "^6.1.4",
+    "tap": "^12.0.1"
+  }
+}
