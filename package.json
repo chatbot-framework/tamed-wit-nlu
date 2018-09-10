@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/tap --cov test/* --reporter=spec",
-    "watch-test": "./node_modules/.bin/chokidar --verbose --initial \"**/*.js\" -i \"node_modules\" -c \"npm run test\""
+    "test-lite": "./node_modules/.bin/tap test/* --reporter=spec",
+    "watch-test": "./node_modules/.bin/chokidar --verbose --initial \"**/*.js\" -i \"node_modules\" -c \"npm run test\"",
+    "watch-test-lite": "./node_modules/.bin/chokidar --verbose --initial \"**/*.js\" -i \"node_modules\" -c \"npm run test-lite\""
   },
   "keywords": [
     "wit",

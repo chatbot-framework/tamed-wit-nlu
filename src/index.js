@@ -42,13 +42,6 @@ class Wit {
       json: true
     }
     return rp.post(options)
-      .then((resp) => {
-        return resp
-      })
-      .catch((err) => {
-        //console.error(err)
-        return Promise.reject(err)
-      })
   }
 
   _getOptions (url, data, qs) {
@@ -99,9 +92,6 @@ class Wit {
       return rp.post(options)
     }).then(() => {
       return true
-    }).catch(err => {
-      console.error(err)
-      return Promise.reject(new Error('WIT API error'))
     })
   }
 
@@ -110,10 +100,6 @@ class Wit {
       .then(curEntities => {
         return entities
           .filter(ety => curEntities.indexOf(ety) < 0)
-      })
-      .catch(err => {
-        console.error(err)
-        return Promise.reject(err)
       })
   }
 
@@ -135,14 +121,19 @@ class Wit {
       .then(that._createEntities.bind(that))
       .then(created => {
         if (!created) return Promise.resovel(false)
-        return rp.post(that._getOptions(API.samples, witSamples))
-          .then(resp => {
-            return resp.success ? resp.success : false
-          })
-      })
-      .catch(e => {
-        console.error(e)
-        return e
+        return Promise.map(witSamples, (sample) => {
+          return rp.post(that._getOptions(API.samples, [sample]))
+            .then(resp => {
+              console.log('sample: '+ JSON.stringify(sample))
+              console.log('training resp: '+ JSON.stringify(resp))
+              return resp.sent ? true :
+                new Error('Training failed for: ' + sample.text +
+                  ', wit message: ' + JSON.stringify(resp))
+            })
+        }).then( (all) => {
+          // check all true
+          return true
+        })
       })
   }
 
@@ -175,9 +166,6 @@ class Wit {
     return rp.delete(options)
       .then(() => {
         return true
-      }).catch(err => {
-        console.error(err.message)
-        return Promise.reject(new Error('WIT API error'))
       })
   }
 
