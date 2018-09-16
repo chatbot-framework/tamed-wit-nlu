@@ -121,7 +121,7 @@ class Wit {
       .then(that._createEntities.bind(that))
       .then(created => {
         if (!created) return Promise.resovel(false)
-        return Promise.map(witSamples, (sample) => {
+        return Promise.mapSeries(witSamples, (sample) => {
           return rp.post(that._getOptions(API.samples, [sample]))
             .then(resp => {
               console.log('sample: '+ JSON.stringify(sample))
