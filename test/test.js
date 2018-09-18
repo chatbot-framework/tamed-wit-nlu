@@ -221,6 +221,7 @@ t.test('train', t => {
     return wit.train(samples)
       .then((resp) => {
         //console.log(resp)
+        t.equal(rp.post.callCount, 4, 'rp post call times 4')
         return resp
       }).catch((e) => {
         console.error(e)

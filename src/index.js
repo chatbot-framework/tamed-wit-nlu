@@ -106,7 +106,7 @@ class Wit {
   _createIntents (samples) {
   }
 
-  train (samples) {
+  train (samples, batchSize, rateLimit) {
     // this is 4 step process
     // step 1 list entities from samples
     // step 2 find new entities
@@ -114,6 +114,7 @@ class Wit {
     // step 4 final then post samples
 
     let witSamples = samples.map(this._format)
+    witSamples = batches(witSamples, batchSize || 1)
 
     let that = this
     let entities = this._listSamplesEntities(samples)
@@ -122,7 +123,7 @@ class Wit {
       .then(created => {
         if (!created) return Promise.resovel(false)
         return Promise.mapSeries(witSamples, (sample) => {
-          return rp.post(that._getOptions(API.samples, [sample]))
+          return rp.post(that._getOptions(API.samples, sample))
             .then(resp => {
               console.log('sample: '+ JSON.stringify(sample))
               console.log('training resp: '+ JSON.stringify(resp))
@@ -130,7 +131,7 @@ class Wit {
                 new Error('Training failed for: ' + sample.text +
                   ', wit message: ' + JSON.stringify(resp))
             })
-        }).then( (all) => {
+        }).then(all => {
           // check all true
           return true
         })
@@ -176,6 +177,15 @@ class Wit {
   exportProject (conf) {
 
   }
+}
+
+// modified from https://stackoverflow.com/a/8495740/713573
+function batches (array, batchSize) {
+	var i,j,tmpArray = []
+	for (i=0,j=array.length; i<j; i+=batchSize) {
+			tmpArray.push(array.slice(i,i+batchSize))
+	}
+	return tmpArray
 }
 
 module.exports = Wit
