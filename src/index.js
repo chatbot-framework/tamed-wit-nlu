@@ -2,6 +2,8 @@ const Promise = require('bluebird')
 const clone = require('clone')
 const rp = require('request-promise')
 
+const RateLimiter = require('limiter').RateLimiter
+
 const API = {
   apps: 'https://api.wit.ai/apps',
   entities: 'https://api.wit.ai/entities',
@@ -106,15 +108,18 @@ class Wit {
   _createIntents (samples) {
   }
 
-  train (samples, batchSize, rateLimit) {
+  train (samples, options) {
     // this is 4 step process
     // step 1 list entities from samples
     // step 2 find new entities
     // step 3 post new entities
     // step 4 final then post samples
-
+    let opts = options || {}
     let witSamples = samples.map(this._format)
-    witSamples = batches(witSamples, batchSize || 1)
+    witSamples = batches(witSamples, opts.batchSize || 1)
+
+    let limiter = new RateLimiter(opts.rateLimit || 1,  opts.rateInterval || 'second')
+    let limiterAsync = Promise.promisifyAll(limiter)
 
     let that = this
     let entities = this._listSamplesEntities(samples)
@@ -122,15 +127,17 @@ class Wit {
       .then(that._createEntities.bind(that))
       .then(created => {
         if (!created) return Promise.resovel(false)
-        return Promise.mapSeries(witSamples, (sample) => {
-          return rp.post(that._getOptions(API.samples, sample))
-            .then(resp => {
-              console.log('sample: '+ JSON.stringify(sample))
-              console.log('training resp: '+ JSON.stringify(resp))
-              return resp.sent ? true :
-                new Error('Training failed for: ' + sample.text +
-                  ', wit message: ' + JSON.stringify(resp))
-            })
+        return Promise.map(witSamples, (sample) => {
+          return limiterAsync.removeTokensAsync(1)
+            .then(() => rp.post(that._getOptions(API.samples, sample))
+              .then(resp => {
+                console.log('sample: '+ JSON.stringify(sample))
+                console.log('training resp: '+ JSON.stringify(resp))
+                return resp.sent ? true :
+                  new Error('Training failed for: ' + sample.text +
+                    ', wit message: ' + JSON.stringify(resp))
+              })
+            )
         }).then(all => {
           // check all true
           return true
